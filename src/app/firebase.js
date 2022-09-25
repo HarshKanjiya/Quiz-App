@@ -1,13 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
-
+import { getFirestore, collection, getDocs, query, doc, getDoc, setDoc } from 'firebase/firestore/lite';
 import { 
     getAuth,
-    createUserWithEmailAndPassword,
-    signInWithPopup,
-    signInWithEmailAndPassword,
-    GoogleAuthProvider,
-    signOut,
     onAuthStateChanged
     
 } from "firebase/auth";
@@ -23,40 +17,76 @@ const firebaseConfig = {
   };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+export const database = getFirestore(app);
 
 
-const auth = getAuth(app);
-
-// sign up - native
-export const nativeSignUP = (email, password) => {
-    createUserWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-        // Signed in 
-        const user = userCredential.user;
-        console.log('user', user)
-    })
-    .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log('errorCode', errorCode,' errorMessage',errorMessage)
-    });
-}
-
-// sign up - google
-export const googleSignIN = () => {
-    signInWithPopup(auth, GoogleAuthProvider)
-}
-
-// sign in - email n password
-export const nativeSignIN = async (email, password) => {
-
-    return await signInWithEmailAndPassword(auth, email, password)
-}
-
-// sign out
-export const nativeSignOUT = () => signOut(auth);
-
+export const auth = getAuth(app);
 
 export const onAuthStateChangedListener = (callback) =>
   onAuthStateChanged(auth, callback);
+
+// db read
+export const collectionRef = collection(database , 'users');
+
+export const getUserData = async () => {
+    const collectionRef = collection(database, 'users');
+    const q = query(collectionRef);
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((doc) => doc.data());
+  };
+
+
+// creating user DB
+
+
+export const creatingDocumentforNativeSignUP = async (auth, extraData ) =>
+{
+  if(!auth) return;
+  
+  const userDocRef = doc(database,'users',auth.uid);
+  const userSnapShot = await getDoc(userDocRef);
+  
+  if (!userSnapShot.exists()) {
+    const { email } = auth;
+    const displayName  = extraData.displayName;
+    const score = 0;
+    try {
+      await setDoc(userDocRef, {
+        displayName,
+        email,
+        score,
+      });
+    } catch (error) {
+      console.log('error creating the user', error.message);
+    }
+  }
+  return userDocRef;
+};
+
+
+export const creatingUserDocument = async (auth, extraInfo = {} ) =>
+{
+  if(!auth) return;
+
+  const userDocRef = doc(database,'users',auth.uid);
+  const userSnapShot = await getDoc(userDocRef);
+  
+  if (!userSnapShot.exists()) {
+    const { displayName, email } = auth;
+    const score = 0;
+    try {
+      await setDoc(userDocRef, {
+        displayName,
+        email,
+        score,
+        ...extraInfo,
+      });
+    } catch (error) {
+      console.log('error creating the user', error.message);
+    }
+  }
+  return userDocRef;
+};
+
+
+

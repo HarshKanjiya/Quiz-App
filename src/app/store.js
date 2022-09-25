@@ -5,6 +5,5 @@ export default configureStore({
 
     reducer: {
         score : scoreReducer,
-        
     }
 })

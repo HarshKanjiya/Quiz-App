@@ -5,6 +5,8 @@ export const scoreSlice = createSlice({
     initialState: {
         score: 0,
         count: 1,
+        logWindow: false,
+        currentUser: false,
     },
     reducers: {
         trueAnswer: (state) => {
@@ -15,10 +17,18 @@ export const scoreSlice = createSlice({
         },
         increseCount: (state) => {
             state.count +=1
+        },
+        
+        resetBtn: (state) => {
+            state.count = 1;
+            state.score = 0;
+        },
+        endBtn: (state) => {
+            state.count = 7;
         }
     }
 })
 
-export const { trueAnswer, falseAnswer,increseCount } = scoreSlice.actions
+export const { trueAnswer, falseAnswer,increseCount, resetBtn, endBtn } = scoreSlice.actions
 
 export default scoreSlice.reducer
